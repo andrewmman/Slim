@@ -123,6 +123,16 @@ class App extends \Pimple
             return new \Slim\Router();
         });
 
+        // Route Factory
+        $this['route_factory'] = $this->share(function ($c) {
+            $options = array(
+                'route_class'    => $c['settings']['routes.route_class'],
+                'case_sensitive' => $c['settings']['routes.case_sensitive'],
+            );
+
+            return new \Slim\RouteFactory($c, $options);
+        });
+
         // View
         $this['view'] = $this->share(function ($c) {
             $view = $c['settings']['view'];
