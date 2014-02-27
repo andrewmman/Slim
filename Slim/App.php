@@ -283,7 +283,7 @@ class App extends \Pimple
     {
         $pattern = array_shift($args);
         $callable = array_pop($args);
-        $route = new \Slim\Route($pattern, $callable, $this['settings']['routes.case_sensitive']);
+        $route = $this['route_factory']->make($pattern, $callable);
         $this['router']->map($route);
         if (count($args) > 0) {
             $route->setMiddleware($args);
