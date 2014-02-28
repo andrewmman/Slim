@@ -54,6 +54,28 @@ class RouteFactoryTest extends PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @dataProvider getReferences
+     */
+    public function testReferencesToController($callable, $expects)
+    {
+        list($factory, $app) = $this->getFactory();
+
+        $this->assertEquals($expects, $this->invokeFactoryMethod('referenceToController', array($callable), $factory));
+    }
+
+    public function getReferences()
+    {
+        return array(
+          array('foo.bar', false),
+          array(function() {}, false),
+          array('foo:bar', true),
+          array('foo.bar:baz', true),
+          array('FooController:bar', true),
+          array('\Foo\BarController:baz', true),
+        );
+    }
+
     public function testResolvingUndefinedServiceThrowsException()
     {
         $this->setExpectedException('\InvalidArgumentException');
