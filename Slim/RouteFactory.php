@@ -75,14 +75,14 @@ class RouteFactory
     public function make($pattern, $callable)
     {
         if ($this->referenceToController($callable)) {
-            $callable = $this->resolveControllerCallback($callable);
+            $callable = $this->makeControllerCallback($callable);
         }
 
         return call_user_func($this->resolver, $pattern, $callable);
     }
 
     /**
-     * Determine if the callable is a reference to a controller that should be resolved.
+     * Determine if the callable is a reference to a controller.
      * @param string    $callable
      * @return bool
      */
@@ -99,7 +99,7 @@ class RouteFactory
      * @param  string $callable
      * @return \Closure
      */
-    protected function resolveControllerCallback($callable)
+    protected function makeControllerCallback($callable)
     {
         list($service, $method) = explode(':', $callable);
         $factory = $this;
