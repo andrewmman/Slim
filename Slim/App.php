@@ -203,7 +203,7 @@ class App extends \Pimple
 
                 $route->setCallable(array(new $callable[0], $callable[1]));
             }
-        });
+        }, 0);
     }
 
     /**
