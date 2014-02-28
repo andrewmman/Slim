@@ -76,6 +76,19 @@ class RouteFactoryTest extends PHPUnit_Framework_TestCase
         );
     }
 
+    public function testMakeControllerCallback()
+    {
+        list($factory, $app) = $this->getFactory();
+
+        $callable = $this->invokeFactoryMethod('makeControllerCallback', array('FooController:bar'), $factory);
+
+        $this->assertTrue(is_callable($callable));
+
+        $app->shouldReceive('offsetExists')->once()->with('FooController')->andReturn(false);
+
+        $this->assertEquals('foo', call_user_func($callable));
+    }
+
     public function testResolvingUndefinedServiceThrowsException()
     {
         $this->setExpectedException('\InvalidArgumentException');
