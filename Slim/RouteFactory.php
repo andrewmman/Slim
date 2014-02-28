@@ -50,20 +50,20 @@ class RouteFactory
     protected $app;
 
     /**
-     * Factory options
-     * @var array
+     * Route factory callable
+     * @var \Closure
      */
-    protected $options;
+    protected $resolver;
 
     /**
      * Constructor
      * @param  \Slim\App  $app
-     * @param  array      $options
+     * @param  \Closure   $factory
      */
-    public function __construct(App $app, $options = array())
+    public function __construct(App $app, \Closure $resolver)
     {
         $this->app = $app;
-        $this->options = $options;
+        $this->resolver = $resolver;
     }
 
     /**
@@ -78,22 +78,7 @@ class RouteFactory
             $callable = $this->resolveHandlerCallback($callable);
         }
 
-        return $this->createRoute($pattern, $callable);
-    }
-
-    /**
-     *
-     * @param string    $pattern
-     * @param \Closure  $callable
-     * @return \Slim\Interfaces\RouteInterface
-     */
-    protected function createRoute($pattern, $callable)
-    {
-        $cls = $this->options['route_class'];
-
-        $case = (bool) $this->options['case_sensitive'];
-
-        return new $cls($pattern, $callable, $case);
+        return call_user_func($this->resolver, $pattern, $callable);
     }
 
     /**
