@@ -132,7 +132,7 @@ class Route implements RouteInterface
     public function __construct($pattern, $callable, $caseSensitive = true)
     {
         $this->setPattern($pattern);
-        $this->setCallable($callable);
+        $this->callable = $callable;
         $this->setConditions(self::getDefaultConditions());
         $this->caseSensitive = $caseSensitive;
     }
@@ -195,11 +195,6 @@ class Route implements RouteInterface
      */
     public function setCallable($callable)
     {
-        $matches = array();
-        if (is_string($callable) && preg_match('!^([^\:]+)\:([[:alnum:]]+)$!', $callable, $matches)) {
-            $callable = array(new $matches[1], $matches[2]);
-        }
-
         if (!is_callable($callable)) {
             throw new \InvalidArgumentException('Route callable must be callable');
         }
