@@ -86,7 +86,7 @@ class RouteFactoryTest extends PHPUnit_Framework_TestCase
 
         $app->shouldReceive('offsetExists')->once()->with('FooController')->andReturn(false);
 
-        $this->assertEquals('foo', call_user_func($callable));
+        $this->assertEquals('foo_bar', call_user_func($callable, '_bar'));
     }
 
     public function testResolvingUndefinedServiceThrowsException()
@@ -140,7 +140,7 @@ class RouteFactoryTest extends PHPUnit_Framework_TestCase
 }
 
 class FooController {
-    function bar() { return 'foo'; }
+    function bar($a) { return 'foo'.$a; }
 }
 
 class FooBarController {
