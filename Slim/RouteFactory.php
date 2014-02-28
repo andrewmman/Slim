@@ -115,8 +115,7 @@ class RouteFactory
     }
 
     /**
-     * Resolve the controller instance from the service container
-     * or by instantiating the controller class.
+     * Resolve the controller instance used by the route to handle the request
      *
      * @param  string $service
      * @throws \InvalidArgumentException
