@@ -74,58 +74,55 @@ class RouteFactory
      */
     public function make($pattern, $callable)
     {
-        if (is_string($callable)) {
-            $callable = $this->resolveHandlerCallback($callable);
+        if ($this->referenceToController($callable)) {
+            $callable = $this->resolveControllerCallback($callable);
         }
 
         return call_user_func($this->resolver, $pattern, $callable);
     }
 
     /**
-     * Define a callback that uses a given service name or class name
+     * Determine if the callable is a reference to a controller that should be resolved.
+     * @param string    $callable
+     * @return bool
+     */
+    protected function referenceToController($callable)
+    {
+        if (is_callable($callable)) return false;
+
+        return is_string($callable) && preg_match('!^([^\:]+)\:([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)$!', $callable);
+    }
+
+    /**
+     * Define a callback that uses a given reference to a service or class name
      *
      * @param  string $callable
      * @return \Closure
      */
-    protected function resolveHandlerCallback($callable)
+    protected function resolveControllerCallback($callable)
     {
-        list($service, $method) = $this->parseCallable($callable);
+        list($service, $method) = explode(':', $callable);
         $factory = $this;
 
         return function() use ($factory, $service, $method) {
 
-            $handler = $factory->resolveHandlerInstance($service);
+            $instance = $factory->resolveControllerInstance($service);
 
             $args = func_get_args();
 
-            return call_user_func_array(array($handler, $method), $args);
+            return call_user_func_array(array($instance, $method), $args);
         };
     }
 
     /**
-     * 
-     *
-     * @param  string $callable
-     * @throws \InvalidArgumentException
-     * @return array
-     */
-    protected function parseCallable($callable)
-    {
-        if ( ! preg_match('!^([^\:]+)\:([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)$!', $callable, $matches)) {
-            throw new \InvalidArgumentException("Invalid callable '$callable' specified.");
-        }
-
-        return array($matches[1], $matches[2]);
-    }
-
-    /**
-     * 
+     * Resolve the controller instance from the service container
+     * or by instantiating the controller class.
      *
      * @param  string $service
      * @throws \InvalidArgumentException
      * @return mixed
      */
-    protected function resolveHandlerInstance($service)
+    protected function resolveControllerInstance($service)
     {
         if (isset($this->app[$service])) return $this->app[$service];
 
@@ -136,7 +133,7 @@ class RouteFactory
         }
 
         throw new \InvalidArgumentException(
-            "The specified '$service' route handler is an undefined service or the controller could not be instantiated."
+            "The specified '$service' route controller is an undefined service or the controller could not be instantiated."
         );
     }
 
