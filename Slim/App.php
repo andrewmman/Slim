@@ -123,6 +123,18 @@ class App extends \Pimple
             return new \Slim\Router();
         });
 
+        // Route factory
+        $this['routes_factory'] = $this->share(function ($c) {
+             $options = array(
+                 'route_class'    => $c['settings']['routes.route_class'],
+                 'case_sensitive' => $c['settings']['routes.case_sensitive'],
+             );
+
+            return function($pattern, $callable) use ($options) {
+                return new $options['route_class']($pattern, $callable, $options['case_sensitive']);
+            };
+        });
+
         // View
         $this['view'] = $this->share(function ($c) {
             $view = $c['settings']['view'];
@@ -272,8 +284,8 @@ class App extends \Pimple
     protected function mapRoute($args)
     {
         $pattern = array_shift($args);
-        $callable = array_pop($args);
-        $route = new \Slim\Route($pattern, $callable, $this['settings']['routes.case_sensitive']);
+        $callable = array_pop($args);        
+        $route = $this['routes_factory']($pattern, $callable);
         $this['router']->map($route);
         if (count($args) > 0) {
             $route->setMiddleware($args);

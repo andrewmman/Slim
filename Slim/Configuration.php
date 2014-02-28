@@ -82,6 +82,7 @@ class Configuration implements ConfigurationInterface, \IteratorAggregate
         // HTTP
         'http.version' => '1.1',
         // Routing
+        'routes.route_class' => '\Slim\Route',
         'routes.case_sensitive' => true
     );
 
