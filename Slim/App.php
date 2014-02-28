@@ -191,6 +191,19 @@ class App extends \Pimple
 
         // Middleware stack
         $this['middleware'] = array($this);
+
+        // Route callable resolver
+        $app = $this;
+        $this->hook('slim.before.dispatch', function($args) use ($app) {
+            $route = $args[0];
+            $callable = $route->getCallable();
+
+            if (is_string($callable) && preg_match('!^([^\:]+)\:([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)$!', $callable)) {
+                $callable = explode(':', $callable);
+
+                $route->setCallable(array(new $callable[0], $callable[1]));
+            }
+        });
     }
 
     /**
