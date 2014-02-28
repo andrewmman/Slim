@@ -1101,7 +1101,7 @@ class App extends \Pimple
             $matchedRoutes = $this['router']->getMatchedRoutes($request->getMethod(), $request->getPathInfo(), false);
             foreach ($matchedRoutes as $route) {
                 try {
-                    $this->applyHook('slim.before.dispatch');
+                    $this->applyHook('slim.before.dispatch', array($route, $request));
                     $dispatched = $route->dispatch();
                     $this->applyHook('slim.after.dispatch');
                     if ($dispatched) {
