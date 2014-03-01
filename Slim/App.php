@@ -125,7 +125,7 @@ class App extends \Pimple
 
         // Route factory
         $this['routes.factory'] = $this->share(function ($c) {
-            return new \Slim\RouteFactory($c, $c['routes.resolver']);
+            return new \Slim\Routing\RouteFactory($c, $c['routes.resolver'], $c['controller_factory']);
         });
 
         // Route factory resolver
@@ -138,6 +138,11 @@ class App extends \Pimple
             return function($pattern, $callable) use ($options) {
                 return new $options['route_class']($pattern, $callable, $options['case_sensitive']);
             };
+        });
+
+        // Controller factory resolver
+        $this['controller_factory'] = $this->share(function ($c) {
+            return function($class) { return new $class; };
         });
 
         // View

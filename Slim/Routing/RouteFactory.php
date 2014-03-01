@@ -30,7 +30,9 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-namespace Slim;
+namespace Slim\Routing;
+
+//use \Slim\Routing\ControllerDispatcher;
 
 /**
  * Route Factory
@@ -53,17 +55,24 @@ class RouteFactory
      * Route factory callable
      * @var \Closure
      */
-    protected $resolver;
+    protected $routeResolver;
+
+    /**
+     * Controller factory callable
+     * @var \Closure
+     */
+    protected $controllerResolver;
 
     /**
      * Constructor
      * @param  \Slim\App  $app
      * @param  \Closure   $factory
      */
-    public function __construct(App $app, \Closure $resolver)
+    public function __construct(\Slim\App $app, \Closure $routeResolver, \Closure $controllerResolver)
     {
         $this->app = $app;
-        $this->resolver = $resolver;
+        $this->routeResolver = $routeResolver;
+        $this->controllerResolver = $controllerResolver;
     }
 
     /**
@@ -78,7 +87,7 @@ class RouteFactory
             $callable = $this->makeControllerCallback($callable);
         }
 
-        return call_user_func($this->resolver, $pattern, $callable);
+        return call_user_func($this->routeResolver, $pattern, $callable);
     }
 
     /**
@@ -90,7 +99,9 @@ class RouteFactory
     {
         if (is_callable($callable)) return false;
 
-        return is_string($callable) && preg_match('!^([^\:]+)\:([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)$!', $callable);
+        $pattern = '!^([^\:]+)\:([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)$!';
+
+        return is_string($callable) && preg_match($pattern, $callable);
     }
 
     /**
@@ -101,17 +112,12 @@ class RouteFactory
      */
     protected function makeControllerCallback($callable)
     {
-        list($service, $method) = explode(':', $callable);
+        list($service, $method) = explode(':', $callable, 2);
         $factory = $this;
 
-        return function() use ($factory, $service, $method) {
-
-            $instance = $factory->resolveControllerInstance($service);
-
-            $args = func_get_args();
-
-            return call_user_func_array(array($instance, $method), $args);
-        };
+        return new ControllerDispatcher(function() use ($factory, $service) {
+            return $factory->resolveControllerInstance($service);
+        }, $method);
     }
 
     /**
@@ -127,13 +133,13 @@ class RouteFactory
 
         if (class_exists($service)) {
             try {
-                return new $service;
-            } catch (\Exception $e) {}
+                return call_user_func($this->controllerResolver, $service);
+            } catch (\Exception $e) {
+                throw new \InvalidArgumentException("The controller '$service' could not be instantiated.");
+            }
         }
 
-        throw new \InvalidArgumentException(
-            "The specified '$service' route controller is an undefined service or the controller could not be instantiated."
-        );
+        throw new \InvalidArgumentException("The controller reference '$service' is undefined.");
     }
 
 }
